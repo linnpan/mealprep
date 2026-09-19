@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>MealPrep v3</title>
+<title>MealPrep v10</title>
 <style>
 :root{--bg:#f6f7f5;--card:#fff;--ink:#20241f;--muted:#6d746d;--line:#dfe4dd;--accent:#4f7b57;--accent2:#eaf2eb}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px system-ui,-apple-system,Segoe UI,sans-serif}
@@ -55,6 +55,22 @@ h2{font-size:20px;letter-spacing:-.02em;margin-bottom:5px}h3{font-size:15px}
  .daytotal{min-width:58px}.total-kcal{font-size:11px}
 }
 </style>
+
+<style id="mealprep-v10-style">
+.cook-calendar{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;margin-top:7px}
+.cookday{border:1px solid var(--line);background:#fff;border-radius:12px;padding:9px 5px;cursor:pointer;text-align:center;color:var(--ink)}
+.cookday b,.cookday span{display:block}.cookday span{font-size:12px;color:var(--muted);margin-top:3px}
+.cookday.on{background:var(--accent2);border-color:#a9c2ad;color:#315238;box-shadow:inset 0 0 0 1px #a9c2ad}
+@media(max-width:760px){.cook-calendar{grid-template-columns:repeat(4,1fr)}}
+@media(max-width:480px){.cook-calendar{grid-template-columns:repeat(2,1fr)}}
+@media print{
+  header,nav,.no-print,button{display:none!important}
+  main{max-width:none;margin:0;padding:0}
+  .card{box-shadow:none!important;border:0!important}
+  .matrix{min-width:0!important;width:100%!important}
+}
+</style>
+
 </head>
 <body>
 <header><h1>🥗 MealPrep</h1><nav id="nav"></nav></header>
@@ -73,12 +89,12 @@ const defaultRecipes=[
 ];
 function read(k,f){try{let x=localStorage.getItem(k);return x?JSON.parse(x):f}catch(e){return f}}
 let recipes=read("mp_recipes_v3",defaultRecipes).map(r=>({...r,favorite:!!r.favorite,ingredients:r.ingredients||[],instructions:r.instructions||""}));
-let goals=read("mp_goals_v3",{kcal:1700,protein:35,carbs:35,fat:30,meals:["Frukost","Lunch","Middag","Snack"],planDays:["Mån","Tis","Ons","Tor","Fre"],mealprepDays:["Sön","Ons"],weekStart:"Sön"}); goals.weekStart=goals.weekStart||"Sön"; goals.planDays=goals.planDays||goals.cookDays||["Mån","Tis","Ons","Tor","Fre"]; 
+let goals=read("mp_goals_v3",{kcal:1700,protein:35,carbs:35,fat:30,meals:["Frukost","Lunch","Lunch/Middag","Snack"],planDays:["Mån","Tis","Ons","Tor","Fre"],mealprepDays:["Sön","Ons"],weekStart:"Sön"}); goals.weekStart=goals.weekStart||"Sön"; goals.planDays=goals.planDays||goals.cookDays||["Mån","Tis","Ons","Tor","Fre"]; goals.cookDates=goals.cookDates||[]; 
 let plan=read("mp_plan_v3",null), page="home", activeCat=null;
-const cats=["Frukost","Lunch","Middag","Snack"],days=["Mån","Tis","Ons","Tor","Fre","Lör","Sön"]; const dayOrder=()=>{let i=days.indexOf(goals.weekStart||"Sön");return [...days.slice(i),...days.slice(0,i)]};
+const cats=["Frukost","Lunch","Lunch/Middag","Snack"],days=["Mån","Tis","Ons","Tor","Fre","Lör","Sön"]; const dayOrder=()=>{let i=days.indexOf(goals.weekStart||"Sön");return [...days.slice(i),...days.slice(0,i)]};
 function save(){localStorage.setItem("mp_recipes_v3",JSON.stringify(recipes));localStorage.setItem("mp_goals_v3",JSON.stringify(goals));localStorage.setItem("mp_plan_v3",JSON.stringify(plan))}
 function esc(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
-function nav(){document.getElementById("nav").innerHTML=[["home","Översikt"],["recipes","Mina recept"],["plan","Denna vecka"],["shop","Inköpslista"]].map(([p,n])=>`<button class="${page===p?'active':''}" onclick="show('${p}')">${n}</button>`).join("")}
+function nav(){document.getElementById("nav").innerHTML=[["home","Översikt"],["recipes","Mina recept"],["plan","Veckomeny"],["shop","Inköpslista"]].map(([p,n])=>`<button class="${page===p?'active':''}" onclick="show('${p}')">${n}</button>`).join("")}
 function show(p){page=p;nav();if(p==="home")homePage();if(p==="recipes")recipesPage();if(p==="plan")planPage();if(p==="shop")shopPage()}
 function homePage(){document.getElementById("content").innerHTML=`<div class="grid"><div class="card span12"><h2>Din MealPrep</h2><p class="muted">Bygg en veckomeny från recepten du själv sparar.</p><div class="stats"><div class="stat">Kcal<b>${goals.kcal}</b><span class="muted">per dag</span></div><div class="stat">Macros<b>${goals.protein}/${goals.carbs}/${goals.fat}</b><span class="muted">P / K / F %</span></div><div class="stat">Måltider<b>${goals.meals.length}</b><span class="muted">per dag</span></div></div></div></div>`}
 function recipesPage(){
@@ -92,7 +108,7 @@ function recipesPage(){
 function recipeCard(r){return `<div class="recipe-card"><div>${r.img?`<img class="recipe-img" src="${r.img}">`:`<div class="recipe-img placeholder">📷</div>`}</div><div><h3>${esc(r.name)}</h3><div class="muted">${r.kcal} kcal · ${r.p} g P · ${r.c} g K · ${r.f} g F per portion</div><div class="row" style="margin-top:8px"><button class="btn small" onclick="editRecipe(${r.id})">Redigera</button><button class="btn small" onclick="deleteRecipe(${r.id})">Ta bort</button><button class="iconbtn fav ${r.favorite?'on':''}" title="Favorit i veckomenyn" aria-label="Favorit" onclick="toggleFavorite(${r.id})">${r.favorite?'★':'☆'}</button></div></div></div>`}
 function addRecipe(cat){editRecipe(null,cat)}
 function editRecipe(id,catOverride){
- let r=id?recipes.find(x=>x.id===id):{name:"",cat:catOverride||"Lunch",kcal:500,p:30,c:40,f:15,img:""};
+ let r=id?recipes.find(x=>x.id===id):{name:"",cat:catOverride||"Lunch",kcal:"",p:"",c:"",f:"",img:""};
  document.getElementById("modalbox").innerHTML=`<h2>${id?"Redigera":"Nytt recept"}</h2>
  <label>Namn</label><input id="rn" value="${esc(r.name)}">
  <label>Måltidstyp</label><select id="rc">${cats.map(c=>`<option ${r.cat===c?"selected":""}>${c}</option>`).join("")}</select>
@@ -100,7 +116,7 @@ function editRecipe(id,catOverride){
  <label>Ingredienser</label><div id="ingredients">${(r.ingredients||[]).map((x,i)=>ingredientRow(x,i)).join("")}</div><button class="btn small" type="button" onclick="addIngredientRow()">＋ Ingrediens</button>
  <label>Tillagning</label><textarea id="instructions" rows="5" style="width:100%;padding:9px;border:1px solid #ccd4cb;border-radius:9px">${esc(r.instructions||"")}</textarea>
  <div class="notice" style="margin-top:10px"><b>✨ Importera recept med AI</b><br>
-<span class="muted">Ladda upp en skärmdump från Instagram/hemsida eller ett foto från en bok. AI fyller i receptet — du granskar alltid innan du sparar. Ingen API-nyckel behövs i appen.</span>
+<span class="muted">Ladda upp ett foto eller en skärmdump.</span>
 <div class="row" style="margin-top:8px"><input id="aii" type="file" accept="image/*" onchange="aiImportPreview(this)"><button class="btn primary" type="button" onclick="runAIImport()">Analysera bild</button></div>
 <div id="aipreview" style="margin-top:7px"></div></div>
  <label>Kcal per portion</label><input id="rk" type="number" value="${r.kcal}">
@@ -150,7 +166,9 @@ function fillAIRecipe(o){
   set("instructions",o.instructions||"");
 }
 function aiImportPreview(inp){let f=inp.files[0];if(!f)return;let rd=new FileReader();rd.onload=e=>{window.aiImage=e.target.result;document.getElementById("aipreview").innerHTML=`<div class="muted" style="margin-top:6px">Bild vald. Tryck på Analysera bild för att läsa in receptet.</div>`};rd.readAsDataURL(f)}
-function saveRecipe(id){let ingredients=[...document.querySelectorAll("#ingredients .ing")].map(row=>({name:row.querySelector(".iname").value.trim(),qty:parseFloat(row.querySelector(".iqty").value)||0,unit:row.querySelector(".iunit").value})).filter(x=>x.name);
+function saveRecipe(id){
+  let saveBtn=document.querySelector('#modalbox .btn.primary'); if(saveBtn){saveBtn.textContent="Sparar…";saveBtn.disabled=true;}
+  let ingredients=[...document.querySelectorAll("#ingredients .ing")].map(row=>({name:row.querySelector(".iname").value.trim(),qty:parseFloat(row.querySelector(".iqty").value)||0,unit:row.querySelector(".iunit").value})).filter(x=>x.name);
 let obj={id:id||Date.now(),name:rn.value.trim()||"Nytt recept",cat:rc.value,kcal:+rk.value||0,p:+rp.value||0,c:+rcc.value||0,f:+rf.value||0,img:window.pendingImage||"",ingredients,instructions:document.getElementById("instructions")?.value||"",favorite:id?(recipes.find(x=>x.id===id)?.favorite||false):false};if(id)recipes=recipes.map(r=>r.id===id?obj:r);else recipes.push(obj);save();closeModal();activeCat=obj.cat;recipesPage()}
 function toggleFavorite(id){let r=recipes.find(x=>x.id===id);if(r){r.favorite=!r.favorite;save();recipesPage()}}
 function deleteRecipe(id){if(confirm("Ta bort receptet?")){recipes=recipes.filter(r=>r.id!==id);save();recipesPage()}}
@@ -175,8 +193,33 @@ function setWeekStart(d){goals.weekStart=d;save();planPage()}
 function kcalClass(k){let target=+goals.kcal||1700, pct=Math.abs(k-target)/target;return pct<=.05?"kcal-good":pct<=.10?"kcal-warn":"kcal-bad"}
 function togglePlanDay(d,b){goals.planDays=goals.planDays.includes(d)?goals.planDays.filter(x=>x!==d):[...goals.planDays,d];b.classList.toggle("on");save()}
 
+
+function isoDate(d){return d.toISOString().slice(0,10)}
+function svDay(d){return ["Sön","Mån","Tis","Ons","Tor","Fre","Lör"][d.getDay()]}
+function renderCookCalendar(){
+  let el=document.getElementById("cookCalendar"); if(!el)return;
+  let today=new Date(); today.setHours(12,0,0,0);
+  let chosen=goals.cookDates||[];
+  let cells=[];
+  for(let i=0;i<7;i++){
+    let d=new Date(today); d.setDate(today.getDate()+i);
+    let iso=isoDate(d), on=chosen.includes(iso);
+    cells.push(`<button type="button" class="cookday ${on?"on":""}" onclick="toggleCookDate('${iso}')"><b>${i===0?"Idag":svDay(d)}</b><span>${d.getDate()}/${d.getMonth()+1}</span></button>`);
+  }
+  el.innerHTML=cells.join("");
+}
+function toggleCookDate(iso){
+  goals.cookDates=goals.cookDates||[];
+  goals.cookDates=goals.cookDates.includes(iso)?goals.cookDates.filter(x=>x!==iso):[...goals.cookDates,iso];
+  save(); renderCookCalendar();
+}
+
 function createWeek(){let p=+protein.value,c=+carbs.value,f=+fat.value,k=+gk.value||1700;if(p+c+f!==100){alert("Protein + kolhydrater + fett måste bli 100 %.");return}if(!goals.meals.length||!goals.planDays.length){alert("Välj minst en dag och minst en måltid.");return}goals={...goals,kcal:k,protein:p,carbs:c,fat:f};save();
 let orderedPlanDays=dayOrder().filter(d=>goals.planDays.includes(d));
+  // If cooking dates are selected, keep the existing weekly grid but prioritize
+  // selected cooking days as batch boundaries. This preserves the current app
+  // while making the calendar selection meaningful.
+  let cookDates=goals.cookDates||[];
 let out=[]; 
 // Mealprep is treated as a batch: one portion is eaten on the prep day,
 // and the remaining portions are placed on the next planned days.
@@ -238,7 +281,15 @@ function renderMatrix(){let meals=goals.meals;return `<div class="days"><table c
 function alternatives(day,meal,current){let pool=recipes.filter(r=>r.cat===meal&&r.id!==current);document.getElementById("modalbox").innerHTML=`<h2>Byt ${meal.toLowerCase()}</h2><div class="muted" style="margin-bottom:8px">Välj ett annat recept i samma kategori.</div><div class="alt-list">${pool.length?pool.map(r=>`<div class="alt" onclick="chooseAlt('${day}','${meal}',${r.id})"><b>${esc(r.name)}</b><br><span class="muted">${r.kcal} kcal · ${r.p} g P · ${r.c} g K · ${r.f} g F</span></div>`).join(""):"<div class='empty'>Inga andra recept i denna kategori.</div>"}</div><button class="btn" style="margin-top:10px" onclick="closeModal()">Stäng</button>`;openModal()}
 function chooseAlt(day,meal,id){let d=plan.find(x=>x.day===day),x=d.items.find(i=>i.meal===meal);x.r=recipes.find(r=>r.id===id);d.kcal=d.items.reduce((s,i)=>s+(i.r?.kcal||0),0);d.p=d.items.reduce((s,i)=>s+(i.r?.p||0),0);save();closeModal();planPage()}
 function macros(id){let r=recipes.find(x=>x.id===id);document.getElementById("modalbox").innerHTML=`<h2>${esc(r.name)}</h2><div class="stats"><div class="stat">Kcal<b>${r.kcal}</b><span class="muted">per portion</span></div><div class="stat">Protein<b>${r.p} g</b></div><div class="stat">Kolhydrater<b>${r.c} g</b></div><div class="stat">Fett<b>${r.f} g</b></div></div><button class="btn" style="margin-top:14px" onclick="closeModal()">Stäng</button>`;openModal()}
-function shopPage(){let counts={};(plan||[]).forEach(d=>d.items.forEach(x=>{if(x.r)(x.r.ingredients||[]).forEach(i=>{let key=i.name+"|"+i.unit;counts[key]=(counts[key]||0)+i.qty})}));document.getElementById("content").innerHTML=`<div class="card"><h2>Inköpslista</h2><ul>${Object.entries(counts).map(([k,q])=>{let [n,u]=k.split("|");return `<li>${esc(n)} — ${q} ${esc(u)}</li>`}).join("")||"<li>Skapa en veckomeny först.</li>"}</ul></div>`}
+function shopPage(){
+  let counts={};(plan||[]).forEach(d=>d.items.forEach(x=>{if(x.r)(x.r.ingredients||[]).forEach(i=>{let key=i.name+"|"+i.unit;counts[key]=(counts[key]||0)+i.qty})}));
+  let checked=read("mp_shop_checked_v10",{});
+  document.getElementById("content").innerHTML=`<div class="card"><div class="row" style="justify-content:space-between"><div><h2>Inköpslista</h2><div class="muted">Bocka ur sådant du redan har hemma. Visa sedan bara det du faktiskt behöver köpa.</div></div><button class="btn" onclick="toggleNeedOnly()">Visa ${window.shopNeedOnly?"hela listan":"det jag behöver köpa"}</button></div>
+  <div style="margin-top:12px">${Object.entries(counts).map(([k,q])=>{let [n,u]=k.split("|");let id=btoa(unescape(encodeURIComponent(k))).replace(/=/g,"");let isChecked=!!checked[id];if(window.shopNeedOnly&&isChecked)return "";return `<label class="shopitem" style="display:flex;align-items:center;gap:9px;padding:9px;border-bottom:1px solid var(--line);font-weight:400"><input type="checkbox" ${isChecked?"checked":""} onchange="setShopChecked('${id}',this.checked)"><span>${esc(n)} — ${q} ${esc(u)}</span></label>`}).join("")||"<div class='empty'>Inget kvar att köpa.</div>"}</div></div>`;
+}
+function setShopChecked(id,v){let x=read("mp_shop_checked_v10",{});x[id]=v;localStorage.setItem("mp_shop_checked_v10",JSON.stringify(x));shopPage()}
+function toggleNeedOnly(){window.shopNeedOnly=!window.shopNeedOnly;shopPage()}
+
 function openModal(){modal.classList.add("show")}function closeModal(){modal.classList.remove("show")}
 show("home");
 </script>
