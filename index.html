@@ -26,7 +26,7 @@ ul{margin:8px 0;padding-left:20px}.shop li{margin:7px 0}.shop input{width:auto;m
     <div><div class="logo">🥗 MealPrep</div><div class="sub">Din receptbank → smart veckomeny → inköpslista</div></div>
     <nav id="nav"></nav>
   </div>
-  <main id="content"></main>
+  <main id="content"><div class="card"><h2>MealPrep laddar…</h2><div class="muted">Om detta står kvar, ladda om sidan.</div></div></main>
 </div>
 
 <script>
@@ -37,17 +37,34 @@ const defaultRecipes=[
  {id:4,name:"Protein-yoghurt",meal:"Frukost/Snack",servings:5,kcal:220,p:24,c:18,f:5,ingredients:["500 g kvarg","100 g bär","20 g nötter"]},
  {id:5,name:"Proteinmuffins",meal:"Snack",servings:6,kcal:180,p:18,c:16,f:6,ingredients:["2 bananer","2 ägg","100 g havregryn","30 g proteinpulver"]}
 ];
-let recipes=JSON.parse(localStorage.getItem("mp_recipes")||"null")||defaultRecipes;
-let goals=JSON.parse(localStorage.getItem("mp_goals")||"null")||{kcal:1700,protein:30,carbs:40,fat:30,meals:["Frukost","Lunch","Middag","Snack"],cookDays:["Sön","Ons"]};
-goals.carbs ??= 40; goals.fat ??= 30; goals.cookDays ??= ["Sön","Ons"];
-let plan=JSON.parse(localStorage.getItem("mp_plan")||"null");
+function readStore(key, fallback){
+  try{
+    const raw=localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : fallback;
+  }catch(e){
+    try{ localStorage.removeItem(key); }catch(_){}
+    return fallback;
+  }
+}
+let recipes=readStore("mp_recipes",defaultRecipes);
+let goals=readStore("mp_goals",{kcal:1700,protein:30,carbs:40,fat:30,meals:["Frukost","Lunch","Middag","Snack"],cookDays:["Sön","Ons"]});
+goals.carbs = Number.isFinite(+goals.carbs) ? +goals.carbs : 40;
+goals.fat = Number.isFinite(+goals.fat) ? +goals.fat : 30;
+goals.cookDays = Array.isArray(goals.cookDays) && goals.cookDays.length ? goals.cookDays : ["Sön","Ons"];
+let plan=readStore("mp_plan",null);
 
 const navItems=[["home","Översikt"],["recipes","Recept"],["plan","Veckomeny"],["shop","Inköpslista"]];
 function nav(active){document.getElementById("nav").innerHTML=navItems.map(x=>`<button class="navbtn ${x[0]===active?"active":""}" onclick="show('${x[0]}')">${x[1]}</button>`).join("")}
-function save(){localStorage.setItem("mp_recipes",JSON.stringify(recipes));localStorage.setItem("mp_goals",JSON.stringify(goals));localStorage.setItem("mp_plan",JSON.stringify(plan))}
+function save(){
+  try{
+    localStorage.setItem("mp_recipes",JSON.stringify(recipes));
+    localStorage.setItem("mp_goals",JSON.stringify(goals));
+    localStorage.setItem("mp_plan",JSON.stringify(plan));
+  }catch(e){}
+}
 function show(page){nav(page); if(page==="home")home(); if(page==="recipes")recipePage(); if(page==="plan")planPage(); if(page==="shop")shopPage()}
 function home(){
- const avg=plan?Math.round(plan.reduce((s,d)=>s+d.kcal,0)/5):0;
+ const avg=plan?Math.round(plan.reduce((s,d)=>s+d.kcal,0)/7):0;
  document.getElementById("content").innerHTML=`<div class="grid">
  <div class="card span8"><h1>Din nästa vecka</h1><div class="muted">Sätt veckans mål och låt appen matcha dina sparade recept.</div>
  <div class="stats" style="margin-top:16px"><div class="stat">Mål<b>${goals.kcal}</b><span class="muted">kcal/dag</span></div><div class="stat">Macros<b>${goals.protein}/${goals.carbs}/${goals.fat}</b><span class="muted">P / K / F %</span></div><div class="stat">Måltider<b>${goals.meals.length}</b><span class="muted">per dag</span></div></div>
@@ -70,8 +87,7 @@ function recipePage(){
  </div><div class="card span8"><h2>Mina recept <span class="muted">(${recipes.length})</span></h2>${recipes.map(r=>`<div class="meal"><div><h3>${r.name}</h3><div class="muted">${r.meal} · ${r.servings} portioner · ${r.kcal} kcal · ${r.p} g protein</div><div class="muted">${r.ingredients.join(" · ")}</div></div><button class="btn" onclick="delRecipe(${r.id})">Ta bort</button></div>`).join("")}</div></div>`;
 }
 function addRecipe(){
- const r={id:Date.now(),name:rname.value||"Nytt recept",meal:rmeal.value||"Lunch/Middag",servings:+rserv.value||1,kcal:+rk.value||0,p:+rp.value||0,c:+rc.value||0,f:+rf.value||0,ingredients:ring.value.split("\
-").map(x=>x.trim()).filter(Boolean)};
+ const r={id:Date.now(),name:rname.value||"Nytt recept",meal:rmeal.value||"Lunch/Middag",servings:+rserv.value||1,kcal:+rk.value||0,p:+rp.value||0,c:+rc.value||0,f:+rf.value||0,ingredients:ring.value.split("\\n").map(x=>x.trim()).filter(Boolean)};
  recipes.push(r);save();recipePage();
 }
 function delRecipe(id){recipes=recipes.filter(r=>r.id!==id);save();recipePage()}
@@ -182,6 +198,9 @@ function shopPage(){
  const counts={}; plan.forEach(d=>d.items.forEach(x=>{x.r.ingredients.forEach(i=>counts[i]=(counts[i]||0)+1)}));
  document.getElementById("content").innerHTML=`<div class="grid"><div class="card span8"><h2>🛒 Inköpslista</h2><div class="muted">För ${plan.reduce((n,d)=>n+d.items.length,0)} måltider. Samma ingrediens räknas ihop när den skrivs identiskt i recepten.</div><ul class="shop">${Object.entries(counts).map(([i,n])=>`<li><label style="display:inline;font-weight:500"><input type="checkbox"> ${i} <span class="muted">× ${n}</span></label></li>`).join("")}</ul></div><div class="card span4"><h2>🍳 Meal prep</h2><p class="muted">I nästa version kan appen gruppera portionerna efter recept och föreslå vilka dagar du bör laga dem.</p></div></div>`;
 }
-show("home");
+try{ show("home"); }catch(err){
+  document.getElementById("content").innerHTML =
+    '<div class="card"><h2>Något gick fel när appen laddades.</h2><div class="muted">Ladda om sidan. Om problemet kvarstår, skicka gärna en skärmbild till mig.</div></div>';
+}
 </script>
 </body></html>
