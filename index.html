@@ -2,205 +2,95 @@
 <html lang="sv">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>MealPrep – prototyp</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MealPrep v3</title>
 <style>
-:root{--bg:#f6f4ef;--card:#fff;--ink:#20221f;--muted:#777a73;--accent:#66785b;--line:#e7e4dc;--danger:#a75b52}
-*{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-.app{max-width:1050px;margin:auto;padding:24px}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}
-.logo{font-size:25px;font-weight:800}.sub{color:var(--muted);font-size:14px;margin-top:3px}
-nav{display:flex;gap:8px;flex-wrap:wrap}.navbtn,.btn{border:1px solid var(--line);background:#fff;border-radius:12px;padding:10px 14px;cursor:pointer;font-weight:650}.navbtn.active,.btn.primary{background:var(--accent);color:white;border-color:var(--accent)}
-.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px}.span12{grid-column:span 12}.span8{grid-column:span 8}.span6{grid-column:span 6}.span4{grid-column:span 4}
-h1{font-size:30px;margin:5px 0 4px}h2{font-size:18px;margin:0 0 12px}h3{font-size:16px;margin:0 0 6px}.muted{color:var(--muted)}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.stat{padding:14px;background:#f7f6f1;border-radius:14px}.stat b{font-size:21px;display:block;margin-top:3px}
-label{display:block;font-size:13px;font-weight:700;margin:12px 0 6px}input,select,textarea{width:100%;padding:11px;border:1px solid var(--line);border-radius:11px;font:inherit;background:white}textarea{min-height:90px;resize:vertical}
-.row{display:flex;gap:9px;align-items:center;flex-wrap:wrap}.meal{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}.meal:last-child{border-bottom:0}
-.badge{display:inline-block;padding:5px 9px;border-radius:999px;background:#edf0e9;font-size:12px;font-weight:700}.days{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}.day{background:#fbfaf7;border:1px solid var(--line);border-radius:14px;padding:12px}.dayname{font-weight:800;margin-bottom:7px}.recipe{padding:9px 0;border-bottom:1px solid var(--line);font-size:13px}.recipe:last-child{border-bottom:0}
-ul{margin:8px 0;padding-left:20px}.shop li{margin:7px 0}.shop input{width:auto;margin-right:8px}
-.hidden{display:none}.notice{padding:12px 14px;border-radius:12px;background:#f1eee5;margin-top:12px}.danger{color:var(--danger)}
-@media(max-width:800px){.app{padding:15px}.span8,.span6,.span4{grid-column:span 12}.days{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr 1fr}.top{align-items:flex-start;gap:12px;flex-direction:column}}
+:root{--bg:#f6f7f5;--card:#fff;--ink:#20241f;--muted:#6d746d;--line:#dfe4dd;--accent:#4f7b57;--accent2:#eaf2eb}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px system-ui,-apple-system,Segoe UI,sans-serif}
+header{background:#26352a;color:#fff;padding:18px 22px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:5}
+header h1{margin:0;font-size:21px}nav button{border:0;background:transparent;color:#dce7de;padding:8px 10px;border-radius:9px;cursor:pointer}nav button.active,nav button:hover{background:#3a4c3d;color:#fff}
+main{max-width:1180px;margin:24px auto;padding:0 16px}.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px}.span4{grid-column:span 4}.span8{grid-column:span 8}.span12{grid-column:span 12}
+h2,h3{margin-top:0}.muted{color:var(--muted)}label{display:block;margin:11px 0 5px;font-weight:650}input,select{width:100%;padding:9px 10px;border:1px solid #ccd4cb;border-radius:9px;background:#fff}button{font:inherit}.btn{border:1px solid #cbd4cc;background:#fff;border-radius:9px;padding:9px 12px;cursor:pointer}.btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}.btn.small{padding:6px 9px;font-size:13px}
+.row{display:flex;gap:9px;align-items:center;flex-wrap:wrap}.chips{display:flex;gap:7px;flex-wrap:wrap}.chip{padding:7px 10px;border:1px solid var(--line);border-radius:999px;cursor:pointer;background:#fff}.chip.on{background:var(--accent2);border-color:#a9c2ad;color:#315238}
+.sliderRow{margin:12px 0}.sliderHead{display:flex;justify-content:space-between}.sliderRow input{padding:0;border:0}
+.days{overflow-x:auto}.matrix{min-width:820px;border-collapse:separate;border-spacing:0;width:100%}.matrix th,.matrix td{border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:10px;vertical-align:top;background:#fff}.matrix th:first-child,.matrix td:first-child{position:sticky;left:0;background:#f8faf7;z-index:2}.matrix th{font-size:13px;color:var(--muted)}.mealbox{min-width:150px}.mealname{font-weight:700;margin-bottom:6px}.meal-actions{display:flex;gap:6px}.recipe-img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:11px;background:#edf1ec}.placeholder{display:flex;align-items:center;justify-content:center;color:#8a938a}.recipe-card{display:grid;grid-template-columns:100px 1fr;gap:12px;padding:12px;border:1px solid var(--line);border-radius:12px;margin:9px 0;background:#fff}.category{cursor:pointer}.category:hover{border-color:#a9c2ad}.notice{background:#f1f6f1;border:1px solid #cfe0d0;padding:10px;border-radius:10px}.modal{position:fixed;inset:0;background:#0006;display:none;align-items:center;justify-content:center;padding:20px;z-index:20}.modal.show{display:flex}.modalbox{background:#fff;border-radius:16px;max-width:520px;width:100%;max-height:80vh;overflow:auto;padding:18px}.alt-list{max-height:360px;overflow-y:auto}.alt{padding:11px;border-bottom:1px solid var(--line);cursor:pointer}.alt:hover{background:#f4f7f3}.stats{display:flex;gap:10px;flex-wrap:wrap}.stat{background:#f5f7f4;border-radius:11px;padding:10px 13px;min-width:130px}.stat b{display:block;font-size:19px}.empty{text-align:center;padding:28px;color:var(--muted)}
+@media(max-width:760px){.span4,.span8{grid-column:span 12}.matrix{min-width:760px}header{align-items:flex-start;gap:10px;flex-direction:column}}
 </style>
 </head>
 <body>
-<div class="app">
-  <div class="top">
-    <div><div class="logo">🥗 MealPrep</div><div class="sub">Din receptbank → smart veckomeny → inköpslista</div></div>
-    <nav id="nav"></nav>
-  </div>
-  <main id="content"><div class="card"><h2>MealPrep laddar…</h2><div class="muted">Om detta står kvar, ladda om sidan.</div></div></main>
-</div>
-
+<header><h1>🥗 MealPrep</h1><nav id="nav"></nav></header>
+<main id="content"></main>
+<div class="modal" id="modal" onclick="if(event.target===this)closeModal()"><div class="modalbox" id="modalbox"></div></div>
 <script>
 const defaultRecipes=[
- {id:1,name:"Kycklingpasta",meal:"Lunch/Middag",servings:5,kcal:620,p:48,c:65,f:18,ingredients:["750 g kyckling","500 g pasta","1 paprika","2 dl matlagningsgrädde"]},
- {id:2,name:"Chili con carne",meal:"Lunch/Middag",servings:5,kcal:590,p:45,c:55,f:20,ingredients:["500 g nötfärs","2 burkar krossade tomater","1 burk kidneybönor","1 gul lök"]},
- {id:3,name:"Overnight oats",meal:"Frukost",servings:4,kcal:380,p:25,c:48,f:10,ingredients:["200 g havregryn","4 dl mjölk","2 dl kvarg","200 g bär"]},
- {id:4,name:"Protein-yoghurt",meal:"Frukost/Snack",servings:5,kcal:220,p:24,c:18,f:5,ingredients:["500 g kvarg","100 g bär","20 g nötter"]},
- {id:5,name:"Proteinmuffins",meal:"Snack",servings:6,kcal:180,p:18,c:16,f:6,ingredients:["2 bananer","2 ägg","100 g havregryn","30 g proteinpulver"]}
+{id:1,name:"Kycklingpasta",cat:"Lunch",kcal:620,p:48,c:65,f:18,img:""},
+{id:2,name:"Lax & potatis",cat:"Lunch",kcal:610,p:42,c:52,f:24,img:""},
+{id:3,name:"Tacos",cat:"Middag",kcal:680,p:44,c:58,f:26,img:""},
+{id:4,name:"Kycklingcurry",cat:"Middag",kcal:590,p:46,c:50,f:21,img:""},
+{id:5,name:"Havregröt",cat:"Frukost",kcal:390,p:25,c:53,f:9,img:""},
+{id:6,name:"Äggmacka",cat:"Frukost",kcal:410,p:28,c:38,f:17,img:""},
+{id:7,name:"Proteinyoghurt",cat:"Snack",kcal:220,p:24,c:18,f:5,img:""},
+{id:8,name:"Proteinmuffins",cat:"Snack",kcal:180,p:18,c:16,f:6,img:""}
 ];
-function readStore(key, fallback){
-  try{
-    const raw=localStorage.getItem(key);
-    return raw ? JSON.parse(raw) : fallback;
-  }catch(e){
-    try{ localStorage.removeItem(key); }catch(_){}
-    return fallback;
-  }
+function read(k,f){try{let x=localStorage.getItem(k);return x?JSON.parse(x):f}catch(e){return f}}
+let recipes=read("mp_recipes_v3",defaultRecipes);
+let goals=read("mp_goals_v3",{kcal:1700,protein:35,carbs:35,fat:30,meals:["Frukost","Lunch","Middag","Snack"],cookDays:["Mån","Ons","Fre"]});
+let plan=read("mp_plan_v3",null), page="home", activeCat=null;
+const cats=["Frukost","Lunch","Middag","Snack"],days=["Mån","Tis","Ons","Tor","Fre","Lör","Sön"];
+function save(){localStorage.setItem("mp_recipes_v3",JSON.stringify(recipes));localStorage.setItem("mp_goals_v3",JSON.stringify(goals));localStorage.setItem("mp_plan_v3",JSON.stringify(plan))}
+function esc(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
+function nav(){document.getElementById("nav").innerHTML=[["home","Översikt"],["recipes","Mina recept"],["plan","Denna vecka"],["shop","Inköpslista"]].map(([p,n])=>`<button class="${page===p?'active':''}" onclick="show('${p}')">${n}</button>`).join("")}
+function show(p){page=p;nav();if(p==="home")homePage();if(p==="recipes")recipesPage();if(p==="plan")planPage();if(p==="shop")shopPage()}
+function homePage(){document.getElementById("content").innerHTML=`<div class="grid"><div class="card span12"><h2>Din MealPrep</h2><p class="muted">Bygg en veckomeny från recepten du själv sparar.</p><div class="stats"><div class="stat">Kcal<b>${goals.kcal}</b><span class="muted">per dag</span></div><div class="stat">Macros<b>${goals.protein}/${goals.carbs}/${goals.fat}</b><span class="muted">P / K / F %</span></div><div class="stat">Måltider<b>${goals.meals.length}</b><span class="muted">per dag</span></div></div></div></div>`}
+function recipesPage(){
+ if(activeCat){
+  let list=recipes.filter(r=>r.cat===activeCat);
+  document.getElementById("content").innerHTML=`<div class="row" style="margin-bottom:12px"><button class="btn" onclick="activeCat=null;recipesPage()">← Mina recept</button><h2 style="margin:0">${activeCat}</h2></div><div class="card"><div class="row" style="justify-content:space-between"><h3>${list.length} recept</h3><button class="btn primary" onclick="addRecipe('${activeCat}')">＋ Lägg till recept</button></div>${list.length?list.map(recipeCard).join(""):"<div class='empty'>Inga recept ännu.</div>"}</div>`;
+  return;
+ }
+ document.getElementById("content").innerHTML=`<div class="card"><div class="row" style="justify-content:space-between"><div><h2>Mina recept</h2><div class="muted">Välj en måltidstyp för att se recepten.</div></div><button class="btn primary" onclick="addRecipe('Lunch')">＋ Lägg till recept</button></div><div class="grid" style="margin-top:14px">${cats.map(c=>`<div class="card category span4" onclick="activeCat='${c}';recipesPage()"><h3>${c}</h3><div class="muted">${recipes.filter(r=>r.cat===c).length} recept</div></div>`).join("")}</div></div>`;
 }
-let recipes=readStore("mp_recipes",defaultRecipes);
-let goals=readStore("mp_goals",{kcal:1700,protein:30,carbs:40,fat:30,meals:["Frukost","Lunch","Middag","Snack"],cookDays:["Sön","Ons"]});
-goals.carbs = Number.isFinite(+goals.carbs) ? +goals.carbs : 40;
-goals.fat = Number.isFinite(+goals.fat) ? +goals.fat : 30;
-goals.cookDays = Array.isArray(goals.cookDays) && goals.cookDays.length ? goals.cookDays : ["Sön","Ons"];
-let plan=readStore("mp_plan",null);
-
-const navItems=[["home","Översikt"],["recipes","Recept"],["plan","Veckomeny"],["shop","Inköpslista"]];
-function nav(active){document.getElementById("nav").innerHTML=navItems.map(x=>`<button class="navbtn ${x[0]===active?"active":""}" onclick="show('${x[0]}')">${x[1]}</button>`).join("")}
-function save(){
-  try{
-    localStorage.setItem("mp_recipes",JSON.stringify(recipes));
-    localStorage.setItem("mp_goals",JSON.stringify(goals));
-    localStorage.setItem("mp_plan",JSON.stringify(plan));
-  }catch(e){}
+function recipeCard(r){return `<div class="recipe-card"><div>${r.img?`<img class="recipe-img" src="${r.img}">`:`<div class="recipe-img placeholder">📷</div>`}</div><div><h3>${esc(r.name)}</h3><div class="muted">${r.kcal} kcal · ${r.p} g P · ${r.c} g K · ${r.f} g F per portion</div><div class="row" style="margin-top:8px"><button class="btn small" onclick="editRecipe(${r.id})">Redigera</button><button class="btn small" onclick="deleteRecipe(${r.id})">Ta bort</button></div></div></div>`}
+function addRecipe(cat){editRecipe(null,cat)}
+function editRecipe(id,catOverride){
+ let r=id?recipes.find(x=>x.id===id):{name:"",cat:catOverride||"Lunch",kcal:500,p:30,c:40,f:15,img:""};
+ document.getElementById("modalbox").innerHTML=`<h2>${id?"Redigera":"Nytt recept"}</h2>
+ <label>Namn</label><input id="rn" value="${esc(r.name)}">
+ <label>Måltidstyp</label><select id="rc">${cats.map(c=>`<option ${r.cat===c?"selected":""}>${c}</option>`).join("")}</select>
+ <label>Foto</label><input id="ri" type="file" accept="image/*" onchange="previewImage(this)"><div id="preview" style="margin-top:7px">${r.img?`<img class="recipe-img" src="${r.img}">`:""}</div>
+ <label>Kcal per portion</label><input id="rk" type="number" value="${r.kcal}">
+ <label>Protein, g per portion</label><input id="rp" type="number" value="${r.p}">
+ <label>Kolhydrater, g per portion</label><input id="rcc" type="number" value="${r.c}">
+ <label>Fett, g per portion</label><input id="rf" type="number" value="${r.f}">
+ <div class="row" style="margin-top:15px"><button class="btn primary" onclick="saveRecipe(${id||0})">Spara</button><button class="btn" onclick="closeModal()">Avbryt</button></div>`;
+ window.pendingImage=r.img||"";openModal();
 }
-function show(page){nav(page); if(page==="home")home(); if(page==="recipes")recipePage(); if(page==="plan")planPage(); if(page==="shop")shopPage()}
-function home(){
- const avg=plan?Math.round(plan.reduce((s,d)=>s+d.kcal,0)/7):0;
- document.getElementById("content").innerHTML=`<div class="grid">
- <div class="card span8"><h1>Din nästa vecka</h1><div class="muted">Sätt veckans mål och låt appen matcha dina sparade recept.</div>
- <div class="stats" style="margin-top:16px"><div class="stat">Mål<b>${goals.kcal}</b><span class="muted">kcal/dag</span></div><div class="stat">Macros<b>${goals.protein}/${goals.carbs}/${goals.fat}</b><span class="muted">P / K / F %</span></div><div class="stat">Måltider<b>${goals.meals.length}</b><span class="muted">per dag</span></div></div>
- <div class="row" style="margin-top:15px"><button class="btn primary" onclick="show('plan')">✨ Planera veckan</button><button class="btn" onclick="show('recipes')">+ Lägg till recept</button></div></div>
- <div class="card span4"><h2>Veckans mål</h2>${goals.meals.map(m=>`<span class="badge" style="margin:3px">${m}</span>`).join("")}<div class="notice">${plan?`Planerad snittnivå: <b>${avg} kcal/dag</b>`:"Ingen vecka planerad ännu."}</div></div>
- <div class="card span12"><h2>Så fungerar prototypen</h2><div class="muted">Receptens portioner ändras aldrig. Planeraren väljer bland dina sparade recept och försöker matcha kcal, protein, valda måltider och återanvändning av recept.</div></div>
- </div>`;
-}
-function recipePage(){
- document.getElementById("content").innerHTML=`<div class="grid"><div class="card span4"><h2>Lägg till recept</h2>
- <label>Namn</label><input id="rname" placeholder="T.ex. Kycklingpasta">
- <label>Måltidstyp</label><input id="rmeal" placeholder="Frukost, Lunch/Middag, Snack">
- <label>Antal portioner</label><input id="rserv" type="number" value="5">
- <label>Kcal per portion</label><input id="rk" type="number" value="500">
- <label>Protein, g per portion</label><input id="rp" type="number" value="35">
- <label>Kolhydrater, g per portion</label><input id="rc" type="number" value="50">
- <label>Fett, g per portion</label><input id="rf" type="number" value="15">
- <label>Ingredienser (en per rad)</label><textarea id="ring" placeholder="500 g kyckling&#10;300 g ris"></textarea>
- <button class="btn primary" style="margin-top:10px" onclick="addRecipe()">Spara recept</button>
- </div><div class="card span8"><h2>Mina recept <span class="muted">(${recipes.length})</span></h2>${recipes.map(r=>`<div class="meal"><div><h3>${r.name}</h3><div class="muted">${r.meal} · ${r.servings} portioner · ${r.kcal} kcal · ${r.p} g protein</div><div class="muted">${r.ingredients.join(" · ")}</div></div><button class="btn" onclick="delRecipe(${r.id})">Ta bort</button></div>`).join("")}</div></div>`;
-}
-function addRecipe(){
- const r={id:Date.now(),name:rname.value||"Nytt recept",meal:rmeal.value||"Lunch/Middag",servings:+rserv.value||1,kcal:+rk.value||0,p:+rp.value||0,c:+rc.value||0,f:+rf.value||0,ingredients:ring.value.split("\\n").map(x=>x.trim()).filter(Boolean)};
- recipes.push(r);save();recipePage();
-}
-function delRecipe(id){recipes=recipes.filter(r=>r.id!==id);save();recipePage()}
-
+function previewImage(inp){let f=inp.files[0];if(!f)return;let rd=new FileReader();rd.onload=e=>{window.pendingImage=e.target.result;document.getElementById("preview").innerHTML=`<img class="recipe-img" src="${e.target.result}">`};rd.readAsDataURL(f)}
+function saveRecipe(id){let obj={id:id||Date.now(),name:rn.value.trim()||"Nytt recept",cat:rc.value,kcal:+rk.value||0,p:+rp.value||0,c:+rcc.value||0,f:+rf.value||0,img:window.pendingImage||""};if(id)recipes=recipes.map(r=>r.id===id?obj:r);else recipes.push(obj);save();closeModal();activeCat=obj.cat;recipesPage()}
+function deleteRecipe(id){if(confirm("Ta bort receptet?")){recipes=recipes.filter(r=>r.id!==id);save();recipesPage()}}
 function planPage(){
- const days=["Mån","Tis","Ons","Tor","Fre","Lör","Sön"];
+ const sum=+goals.protein + +goals.carbs + +goals.fat;
+ const grams={p:Math.round(goals.kcal*goals.protein/100/4),c:Math.round(goals.kcal*goals.carbs/100/4),f:Math.round(goals.kcal*goals.fat/100/9)};
  document.getElementById("content").innerHTML=`<div class="grid"><div class="card span4"><h2>Veckans mål</h2>
- <label>Kcal per dag</label><input id="gk" type="number" value="${goals.kcal}">
- <label>Protein %</label><input id="gp" type="number" min="0" max="100" value="${goals.protein}">
- <label>Kolhydrater %</label><input id="gc" type="number" min="0" max="100" value="${goals.carbs}">
- <label>Fett %</label><input id="gf" type="number" min="0" max="100" value="${goals.fat}">
- <div id="macroSum" class="muted" style="margin-top:6px">Summa: ${goals.protein+goals.carbs+goals.fat}%</div>
- <label style="margin-top:16px">Måltider per dag</label>
- ${["Frukost","Lunch","Middag","Snack"].map(m=>`<label style="font-weight:500"><input type="checkbox" class="mealcheck" value="${m}" ${goals.meals.includes(m)?"checked":""}> ${m}</label>`).join("")}
- <label style="margin-top:16px">Dagar jag planerar laga mat</label>
- <div class="muted">Används för att planera mealprep och portioner.</div>
- ${days.map(d=>`<label style="font-weight:500"><input type="checkbox" class="cookcheck" value="${d}" ${goals.cookDays.includes(d)?"checked":""}> ${d}</label>`).join("")}
- <button class="btn primary" style="margin-top:10px" onclick="generate()">✨ Skapa veckomeny</button>
- </div><div class="card span8"><h2>Plan</h2>${plan?renderPlan():"<div class='muted'>Skapa en plan för att se dina måltider här.</div>"}</div></div>`;
+ <label>Kcal per dag</label><input id="gk" type="number" value="${goals.kcal}" oninput="goalPreview()">
+ ${slider("protein","Protein",goals.protein,grams.p)}${slider("carbs","Kolhydrater",goals.carbs,grams.c)}${slider("fat","Fett",goals.fat,grams.f)}
+ <div id="sum" class="notice" style="margin-top:8px">Totalt: <b>${sum}%</b> ${sum===100?"✓":"⚠️"}</div>
+ <label>Måltider per dag</label><div class="chips">${cats.map(c=>`<button class="chip ${goals.meals.includes(c)?"on":""}" onclick="toggleMeal('${c}',this)">${c}</button>`).join("")}</div>
+ <label>Dagar jag planerar laga mat</label><div class="chips">${days.map(d=>`<button class="chip ${goals.cookDays.includes(d)?"on":""}" onclick="toggleCook('${d}',this)">${d}</button>`).join("")}</div>
+ <div class="row" style="margin-top:14px"><button class="btn primary" onclick="createWeek()">✨ Skapa veckomeny</button><button class="btn" onclick="createWeek(true)">🔄 Gör om veckomeny</button></div></div>
+ <div class="card span8"><h2>Veckomeny</h2>${plan?renderMatrix():"<div class='empty'>Skapa en veckomeny för att se den här.</div>"}</div></div>`;
 }
-function mealMatch(r,meal){
- const t=meal.toLowerCase(); const m=r.meal.toLowerCase();
- return (t==="frukost"&&m.includes("frukost"))||(t==="lunch"&&m.includes("lunch"))||(t==="middag"&&m.includes("middag"))||(t==="snack"&&(m.includes("snack")||m.includes("frukost")));
-}
-function generate(){
- goals={kcal:+gk.value||1700,protein:+gp.value||30,carbs:+gc.value||40,fat:+gf.value||30,
-   meals:[...document.querySelectorAll(".mealcheck:checked")].map(x=>x.value),
-   cookDays:[...document.querySelectorAll(".cookcheck:checked")].map(x=>x.value)};
- if(goals.protein+goals.carbs+goals.fat!==100){alert("Protein + kolhydrater + fett måste bli 100 %.");return}
- if(!goals.meals.length){alert("Välj minst en måltid.");return}
- if(!goals.cookDays.length){alert("Välj minst en dag då du planerar laga mat.");return}
-
- // Whole-recipe portions only. Search combinations per day, prioritizing reaching/exceeding kcal
- // while also considering macro percentages. No recipe quantities are changed.
- const days=["Mån","Tis","Ons","Tor","Fre","Lör","Sön"];
- const targets={k:goals.kcal,p:goals.kcal*goals.protein/100/4,c:goals.kcal*goals.carbs/100/4,f:goals.kcal*goals.fat/100/9};
- const candidates=recipes.filter(r=>goals.meals.some(m=>mealMatch(r,m)));
- function scoreCombo(items){
-   let k=items.reduce((s,x)=>s+x.r.kcal,0), p=items.reduce((s,x)=>s+x.r.p,0), c=items.reduce((s,x)=>s+x.r.c,0), f=items.reduce((s,x)=>s+x.r.f,0);
-   // Strongly prefer reaching the calorie target; if several reach it, minimize overshoot.
-   const under=Math.max(0,targets.k-k);
-   const over=Math.max(0,k-targets.k);
-   const kcalScore=under*3+over*1;
-   const pScore=Math.abs(p-targets.p)*1.5, cScore=Math.abs(c-targets.c), fScore=Math.abs(f-targets.f);
-   return kcalScore+pScore+cScore+fScore;
- }
- function choicesForMeal(meal){
-   const pool=recipes.filter(r=>mealMatch(r,meal));
-   return pool.length?pool:[];
- }
- function search(items, idx, best){
-   if(idx===goals.meals.length){
-     const s=scoreCombo(items); if(s<best.score) best={score:s,items:[...items]}; return best;
-   }
-   const pool=choicesForMeal(goals.meals[idx]);
-   pool.forEach(r=>{items.push({meal:goals.meals[idx],r}); best=search(items,idx+1,best); items.pop()});
-   return best;
- }
- plan=[];
- for(let di=0;di<7;di++){
-   let best=search([],0,{score:Infinity,items:[]});
-   let items=best.items;
-   let k=items.reduce((s,x)=>s+x.r.kcal,0),p=items.reduce((s,x)=>s+x.r.p,0);
-   plan.push({day:days[di],items,kcal:k,p,cook:goals.cookDays.includes(days[di])});
- }
- save();planPage();
-}
-function renderPlan(){
- const avg=Math.round(plan.reduce((s,d)=>s+d.kcal,0)/7);
- return `<div class="days">${plan.map(d=>`<div class="day"><div class="dayname">${d.day} ${d.cook?"🍳":""}</div>${d.items.map(x=>`<div class="recipe"><b>${x.meal}</b><br>${x.r.name}<br><span class="muted">${x.r.kcal} kcal · ${x.r.p} g P · ${x.r.c} g K · ${x.r.f} g F</span><br><button class="btn" style="margin-top:6px;padding:7px 10px" onclick="changeMeal('${d.day}','${x.meal}',${x.r.id})">🔄 Byt</button></div>`).join("")}<div style="margin-top:9px"><b>${d.kcal} kcal</b><br><span class="muted">${d.p} g protein</span></div></div>`).join("")}</div>
- <div class="row" style="margin-top:14px"><button class="btn primary" onclick="regenerateWeek()">🔄 Gör om veckomenyn</button><span class="muted">Snitt: ${avg} kcal/dag · mål ${goals.kcal}</span></div>
- <div class="notice" style="margin-top:14px">🎯 Kcalmålet prioriteras som ett mål att nå upp till. Receptens portioner och macros ändras aldrig. Appen väljer endast bland dina sparade recept.</div>`;
-}
-function regenerateWeek(){ generateFromSavedGoals(); }
-function generateFromSavedGoals(){
- const oldG=goals; goals={...oldG};
- // Re-render the plan using current saved goals without needing the form values.
- const fake={};
- const days=["Mån","Tis","Ons","Tor","Fre","Lör","Sön"];
- const targets={k:goals.kcal,p:goals.kcal*goals.protein/100/4,c:goals.kcal*goals.carbs/100/4,f:goals.kcal*goals.fat/100/9};
- function score(items){
-  const k=items.reduce((s,x)=>s+x.r.kcal,0),p=items.reduce((s,x)=>s+x.r.p,0),c=items.reduce((s,x)=>s+x.r.c,0),f=items.reduce((s,x)=>s+x.r.f,0);
-  return Math.max(0,targets.k-k)*3+Math.max(0,k-targets.k)+Math.abs(p-targets.p)*1.5+Math.abs(c-targets.c)+Math.abs(f-targets.f)+Math.random()*10;
- }
- function search(items,i,best){
-  if(i===goals.meals.length){let s=score(items);return s<best.score?{score:s,items:[...items]}:best}
-  const pool=recipes.filter(r=>mealMatch(r,goals.meals[i]));
-  pool.forEach(r=>{items.push({meal:goals.meals[i],r});best=search(items,i+1,best);items.pop()});return best;
- }
- plan=days.map(day=>{const b=search([],0,{score:Infinity,items:[]});return {day,items:b.items,kcal:b.items.reduce((s,x)=>s+x.r.kcal,0),p:b.items.reduce((s,x)=>s+x.r.p,0),cook:goals.cookDays.includes(day)}});
- save();planPage();
-}
-function changeMeal(day,meal,currentId){
- const pool=recipes.filter(r=>mealMatch(r,meal)&&r.id!==currentId);
- if(!pool.length){alert("Det finns inga andra recept som passar den här måltidstypen ännu.");return}
- const d=plan.find(x=>x.day===day), item=d.items.find(x=>x.meal===meal);
- const names=pool.map((r,i)=>`${i+1}. ${r.name} — ${r.kcal} kcal`).join("\
-");
- const answer=prompt("Välj ett annat recept:\
-"+names+"\
-\
-Skriv numret:");
- const n=Number(answer)-1;
- if(Number.isInteger(n)&&pool[n]){item.r=pool[n];d.kcal=d.items.reduce((s,x)=>s+x.r.kcal,0);d.p=d.items.reduce((s,x)=>s+x.r.p,0);save();planPage()}
-}
-function shopPage(){
- if(!plan){document.getElementById("content").innerHTML=`<div class="card"><h2>Inköpslista</h2><div class="muted">Skapa en veckomeny först.</div><button class="btn primary" style="margin-top:12px" onclick="show('plan')">Till veckomenyn</button></div>`;return}
- const counts={}; plan.forEach(d=>d.items.forEach(x=>{x.r.ingredients.forEach(i=>counts[i]=(counts[i]||0)+1)}));
- document.getElementById("content").innerHTML=`<div class="grid"><div class="card span8"><h2>🛒 Inköpslista</h2><div class="muted">För ${plan.reduce((n,d)=>n+d.items.length,0)} måltider. Samma ingrediens räknas ihop när den skrivs identiskt i recepten.</div><ul class="shop">${Object.entries(counts).map(([i,n])=>`<li><label style="display:inline;font-weight:500"><input type="checkbox"> ${i} <span class="muted">× ${n}</span></label></li>`).join("")}</ul></div><div class="card span4"><h2>🍳 Meal prep</h2><p class="muted">I nästa version kan appen gruppera portionerna efter recept och föreslå vilka dagar du bör laga dem.</p></div></div>`;
-}
-try{ show("home"); }catch(err){
-  document.getElementById("content").innerHTML =
-    '<div class="card"><h2>Något gick fel när appen laddades.</h2><div class="muted">Ladda om sidan. Om problemet kvarstår, skicka gärna en skärmbild till mig.</div></div>';
-}
+function slider(k,label,val,g){return `<div class="sliderRow"><div class="sliderHead"><span>${label}</span><b><span id="${k}v">${val}</span>% · <span id="${k}g">${g}</span> g</b></div><input id="${k}" type="range" min="0" max="100" value="${val}" oninput="goalPreview()"></div>`}
+function goalPreview(){let k=+gk.value||1700,p=+protein.value,c=+carbs.value,f=+fat.value;proteinv.textContent=p;carbsv.textContent=c;fatv.textContent=f;proteing.textContent=Math.round(k*p/100/4);carbsg.textContent=Math.round(k*c/100/4);fatg.textContent=Math.round(k*f/100/9);sum.innerHTML=`Totalt: <b>${p+c+f}%</b> ${p+c+f===100?"✓":"⚠️"}`}
+function toggleMeal(c,b){goals.meals=goals.meals.includes(c)?goals.meals.filter(x=>x!==c):[...goals.meals,c];b.classList.toggle("on");save()}
+function toggleCook(d,b){goals.cookDays=goals.cookDays.includes(d)?goals.cookDays.filter(x=>x!==d):[...goals.cookDays,d];b.classList.toggle("on");save()}
+function createWeek(){let p=+protein.value,c=+carbs.value,f=+fat.value,k=+gk.value||1700;if(p+c+f!==100){alert("Protein + kolhydrater + fett måste bli 100 %.");return}if(!goals.meals.length||!goals.cookDays.length){alert("Välj minst en måltid och en matlagningsdag.");return}goals={...goals,kcal:k,protein:p,carbs:c,fat:f};save();let targets={k,p:k*p/100/4,c:k*c/100/4,f:k*f/100/9};let out=[];for(const d of goals.cookDays){let items=goals.meals.map(m=>{let pool=recipes.filter(r=>r.cat===m);return pool[Math.floor(Math.random()*pool.length)]||null}).filter(Boolean);let kcal=items.reduce((s,r)=>s+r.kcal,0);out.push({day:d,items:goals.meals.map((m,i)=>({meal:m,r:items[i]||null})),kcal,p:items.reduce((s,r)=>s+r.p,0)})}plan=out;save();planPage()}
+function renderMatrix(){let meals=goals.meals;return `<div class="days"><table class="matrix"><thead><tr><th>Dag</th>${meals.map(m=>`<th>${m}</th>`).join("")}</tr></thead><tbody>${plan.map(d=>`<tr><th>${d.day}</th>${meals.map(m=>{let x=d.items.find(i=>i.meal===m);return `<td>${x&&x.r?`<div class="mealbox"><div class="mealname">${esc(x.r.name)}</div><div class="meal-actions"><button class="btn small" onclick="alternatives('${d.day}','${m}',${x.r.id})">🔄 Byt</button><button class="btn small" onclick="macros(${x.r.id})">📊 Macros</button></div></div>`:"—"}</td>`}).join("")}</tr>`).join("")}</tbody></table></div>`}
+function alternatives(day,meal,current){let pool=recipes.filter(r=>r.cat===meal&&r.id!==current);document.getElementById("modalbox").innerHTML=`<h2>Byt ${meal.toLowerCase()}</h2><div class="muted" style="margin-bottom:8px">Välj ett annat recept i samma kategori.</div><div class="alt-list">${pool.length?pool.map(r=>`<div class="alt" onclick="chooseAlt('${day}','${meal}',${r.id})"><b>${esc(r.name)}</b><br><span class="muted">${r.kcal} kcal · ${r.p} g P · ${r.c} g K · ${r.f} g F</span></div>`).join(""):"<div class='empty'>Inga andra recept i denna kategori.</div>"}</div><button class="btn" style="margin-top:10px" onclick="closeModal()">Stäng</button>`;openModal()}
+function chooseAlt(day,meal,id){let d=plan.find(x=>x.day===day),x=d.items.find(i=>i.meal===meal);x.r=recipes.find(r=>r.id===id);d.kcal=d.items.reduce((s,i)=>s+(i.r?.kcal||0),0);d.p=d.items.reduce((s,i)=>s+(i.r?.p||0),0);save();closeModal();planPage()}
+function macros(id){let r=recipes.find(x=>x.id===id);document.getElementById("modalbox").innerHTML=`<h2>${esc(r.name)}</h2><div class="stats"><div class="stat">Kcal<b>${r.kcal}</b><span class="muted">per portion</span></div><div class="stat">Protein<b>${r.p} g</b></div><div class="stat">Kolhydrater<b>${r.c} g</b></div><div class="stat">Fett<b>${r.f} g</b></div></div><button class="btn" style="margin-top:14px" onclick="closeModal()">Stäng</button>`;openModal()}
+function shopPage(){let counts={};(plan||[]).forEach(d=>d.items.forEach(x=>{if(x.r)counts[x.r.name]=(counts[x.r.name]||0)+1}));document.getElementById("content").innerHTML=`<div class="card"><h2>Inköpslista</h2><div class="muted">Recepten behöver ingredienslistor för en riktig råvarulista. Just nu visas valda recept som underlag.</div><ul>${Object.entries(counts).map(([n,c])=>`<li>${esc(n)} × ${c} portioner</li>`).join("")||"<li>Skapa en veckomeny först.</li>"}</ul></div>`}
+function openModal(){modal.classList.add("show")}function closeModal(){modal.classList.remove("show")}
+show("home");
 </script>
 </body></html>
