@@ -100,8 +100,8 @@ function editRecipe(id,catOverride){
  <label>Ingredienser</label><div id="ingredients">${(r.ingredients||[]).map((x,i)=>ingredientRow(x,i)).join("")}</div><button class="btn small" type="button" onclick="addIngredientRow()">＋ Ingrediens</button>
  <label>Tillagning</label><textarea id="instructions" rows="5" style="width:100%;padding:9px;border:1px solid #ccd4cb;border-radius:9px">${esc(r.instructions||"")}</textarea>
  <div class="notice" style="margin-top:10px"><b>✨ Importera recept med AI</b><br>
-<span class="muted">Ladda upp en skärmdump från Instagram/hemsida eller ett foto från en bok. AI försöker fylla i receptet — du granskar alltid innan du sparar.</span>
-<div class="row" style="margin-top:8px"><input id="aii" type="file" accept="image/*" onchange="aiImportPreview(this)"><button class="btn primary" type="button" onclick="runAIImport()">Analysera bild</button><button class="btn small" type="button" onclick="setAIKey()">API-nyckel</button></div>
+<span class="muted">Ladda upp en skärmdump från Instagram/hemsida eller ett foto från en bok. AI fyller i receptet — du granskar alltid innan du sparar. Ingen API-nyckel behövs i appen.</span>
+<div class="row" style="margin-top:8px"><input id="aii" type="file" accept="image/*" onchange="aiImportPreview(this)"><button class="btn primary" type="button" onclick="runAIImport()">Analysera bild</button></div>
 <div id="aipreview" style="margin-top:7px"></div></div>
  <label>Kcal per portion</label><input id="rk" type="number" value="${r.kcal}">
  <label>Protein, g per portion</label><input id="rp" type="number" value="${r.p}">
@@ -115,31 +115,33 @@ function previewImage(inp){let f=inp.files[0];if(!f)return;let rd=new FileReader
 function ingredientRow(x={},i){let units=["st","g","kg","ml","cl","dl","l","tsk","msk","krm","burk","förpackning","påse","flaska","paket","ask","knippe","skiva","klyfta","portion","annan"];return `<div class="row ing" style="margin:6px 0"><input class="iname" placeholder="Ingrediens" value="${esc(x.name||"")}"><input class="iqty" type="number" step="any" placeholder="Mängd" value="${x.qty??""}" style="max-width:100px"><select class="iunit" style="max-width:150px">${units.map(u=>`<option ${x.unit===u?"selected":""}>${u}</option>`).join("")}</select><button class="iconbtn" type="button" title="Ta bort" onclick="this.parentElement.remove()">×</button></div>`}
 function addIngredientRow(){document.getElementById("ingredients").insertAdjacentHTML("beforeend",ingredientRow({},document.querySelectorAll(".ing").length))}
 
-function getAIKey(){return localStorage.getItem("mealprep_openai_key")||""}
-function setAIKey(){let k=prompt("Klistra in din OpenAI API-nyckel. Den sparas endast lokalt i denna webbläsare. För personlig testning.",getAIKey());if(k!==null){localStorage.setItem("mealprep_openai_key",k.trim());alert("API-nyckeln är sparad lokalt.")}}
+const AI_WORKER_URL="https://tight-truth-b3e3.linngabriella.workers.dev/analyze-recipe";
 async function runAIImport(){
   const inp=document.getElementById("aii"), f=inp?.files?.[0];
   if(!f){alert("Välj en bild först.");return}
-  let key=getAIKey(); if(!key){setAIKey(); key=getAIKey(); if(!key)return}
-  const status=document.getElementById("aipreview"); status.textContent="Analyserar receptet…";
-  const dataUrl=await new Promise((res,rej)=>{let r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(f)});
-  const prompt=`Läs receptet i bilden och returnera ENDAST JSON med exakt dessa fält:
-{"name":"","cat":"","kcal":0,"p":0,"c":0,"f":0,"ingredients":[{"name":"","qty":0,"unit":""}],"instructions":""}
-cat måste vara en av: Frukost, Lunch, Middag, Snack.
-kcal, p, c, f ska vara per portion om informationen finns. Om ett värde saknas, använd 0 och gissa inte.
-För ingredienser: använd svenska vanliga enheter när möjligt: st,g,kg,ml,cl,dl,l,tsk,msk,krm,burk,förpackning,påse,flaska,paket,ask,knippe,skiva,klyfta,portion.
-Läs text även om den ligger på en bokssida, skärmdump eller foto.`;
+  const status=document.getElementById("aipreview");
+  status.textContent="Analyserar receptet…";
   try{
-    const resp=await fetch("https://api.openai.com/v1/responses",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+key},
-      body:JSON.stringify({model:"gpt-4.1-mini",input:[{role:"user",content:[{type:"input_text",text:prompt},{type:"input_image",image_url:dataUrl}]}],temperature:0})});
-    if(!resp.ok) throw new Error("API-fel "+resp.status);
-    const j=await resp.json();
-    let text=j.output?.map(x=>x.content||[]).flat().map(x=>x.text||"").join("")||"";
-    text=text.replace(/```json|```/g,"").trim();
-    const obj=JSON.parse(text);
+    const dataUrl=await new Promise((res,rej)=>{
+      const r=new FileReader();
+      r.onload=()=>res(r.result);
+      r.onerror=rej;
+      r.readAsDataURL(f);
+    });
+    const resp=await fetch(AI_WORKER_URL,{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({image:dataUrl})
+    });
+    const j=await resp.json().catch(()=>({}));
+    if(!resp.ok) throw new Error(j.error||("API-fel "+resp.status));
+    const obj=j.recipe||j;
     fillAIRecipe(obj);
     status.textContent="Klart — kontrollera uppgifterna och spara receptet.";
-  }catch(e){console.error(e);status.textContent="Kunde inte läsa receptet: "+e.message+". Kontrollera API-nyckeln och försök igen."}
+  }catch(e){
+    console.error(e);
+    status.textContent="Kunde inte läsa receptet: "+e.message+". Försök igen.";
+  }
 }
 function fillAIRecipe(o){
   const set=(id,v)=>{let el=document.getElementById(id);if(el&&v!==undefined)el.value=v};
@@ -147,7 +149,7 @@ function fillAIRecipe(o){
   let box=document.getElementById("ingredients"); if(box){box.innerHTML="";(o.ingredients||[]).forEach(x=>box.insertAdjacentHTML("beforeend",ingredientRow(x,0)))}
   set("instructions",o.instructions||"");
 }
-function aiImportPreview(inp){let f=inp.files[0];if(!f)return;let rd=new FileReader();rd.onload=e=>{window.aiImage=e.target.result;document.getElementById("aipreview").innerHTML=`<div class="muted" style="margin-top:6px">Bild vald. I denna kostnadsfria prototyp fylls inget automatiskt utan din bekräftelse.</div>`};rd.readAsDataURL(f)}
+function aiImportPreview(inp){let f=inp.files[0];if(!f)return;let rd=new FileReader();rd.onload=e=>{window.aiImage=e.target.result;document.getElementById("aipreview").innerHTML=`<div class="muted" style="margin-top:6px">Bild vald. Tryck på Analysera bild för att läsa in receptet.</div>`};rd.readAsDataURL(f)}
 function saveRecipe(id){let ingredients=[...document.querySelectorAll("#ingredients .ing")].map(row=>({name:row.querySelector(".iname").value.trim(),qty:parseFloat(row.querySelector(".iqty").value)||0,unit:row.querySelector(".iunit").value})).filter(x=>x.name);
 let obj={id:id||Date.now(),name:rn.value.trim()||"Nytt recept",cat:rc.value,kcal:+rk.value||0,p:+rp.value||0,c:+rcc.value||0,f:+rf.value||0,img:window.pendingImage||"",ingredients,instructions:document.getElementById("instructions")?.value||"",favorite:id?(recipes.find(x=>x.id===id)?.favorite||false):false};if(id)recipes=recipes.map(r=>r.id===id?obj:r);else recipes.push(obj);save();closeModal();activeCat=obj.cat;recipesPage()}
 function toggleFavorite(id){let r=recipes.find(x=>x.id===id);if(r){r.favorite=!r.favorite;save();recipesPage()}}
